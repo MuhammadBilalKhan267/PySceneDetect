@@ -119,7 +119,7 @@ def save_keyframes(
         # https://aegisub.org/docs/latest/video/#keyframe-file-specification
         keyframes_file.write("fps 0\n")
         keyframes_file.write("0\n")
-        # TODO(https://scenedetect.com/issues/566): Frame numbers are approximate for VFR
+        # TODO(https://scenedetect.com/issues/569): Frame numbers are approximate for VFR
         # input until exact presentation-frame ordinals are tracked.
         keyframes_file.writelines(f"{cut.frame_num}\n" for cut in cuts)
     logger.info(f"Keyframes written to: {keyframes_path}")
