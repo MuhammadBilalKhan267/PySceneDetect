@@ -725,6 +725,8 @@ Options
 
 Save detected cuts using keyframe format v1.
 
+Frame numbers are currently approximate for variable framerate (VFR) video.
+
 
 Options
 ------------------------------------------------------------------------

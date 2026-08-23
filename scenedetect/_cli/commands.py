@@ -114,8 +114,13 @@ def save_keyframes(
     )
     with open(keyframes_path, "w") as keyframes_file:
         keyframes_file.write("# keyframe format v1\n")
+        # The keyframe format v1 specification includes an FPS field, but Aegisub does not
+        # use it and documents `0` as the conventional value:
+        # https://aegisub.org/docs/latest/video/#keyframe-file-specification
         keyframes_file.write("fps 0\n")
         keyframes_file.write("0\n")
+        # TODO(https://scenedetect.com/issues/566): Frame numbers are approximate for VFR
+        # input until exact presentation-frame ordinals are tracked.
         keyframes_file.writelines(f"{cut.frame_num}\n" for cut in cuts)
     logger.info(f"Keyframes written to: {keyframes_path}")
 
