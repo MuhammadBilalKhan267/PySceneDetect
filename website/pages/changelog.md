@@ -789,3 +789,7 @@ Development
  - [api] Legacy `framerate` argument aliases in `FrameTimecode`, `open_video()`, and the video backends now emit a `DeprecationWarning`; use `frame_rate` instead. When both forms are provided, `frame_rate` takes precedence [#548](https://github.com/Breakthrough/PySceneDetect/issues/548)
  - [general] `-f`, `--frame-rate`, and `--framerate` are now aliases of the same CLI option, and all forms appear in help and documentation. If multiple forms are given, the last value is used [#548](https://github.com/Breakthrough/PySceneDetect/issues/548)
  - [api] `write_scene_list()` now also accepts a path (`str` or `pathlib.Path`) as the first argument in addition to an open file handle; paths are opened and closed automatically [#523](https://github.com/Breakthrough/PySceneDetect/issues/523)
+
+## PySceneDetect 0.8 (TBD)
+
+- [feature] Added `save-keyframes` command to export detected cuts using `# keyframe format v1` for Aegisub-compatible tools [#534](https://github.com/Breakthrough/PySceneDetect/issues/534). Frame numbers are currently approximate for VFR input [#569](https://github.com/Breakthrough/PySceneDetect/issues/569)
