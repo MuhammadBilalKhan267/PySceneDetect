@@ -22,6 +22,9 @@ on:
 
 jobs:
   build:
+    # Skip scheduled runs in forks: GitHub attributes cron runs to the upstream
+    # workflow author, who then gets emailed when a fork's nightly build fails.
+    if: github.repository_owner == 'Breakthrough' || github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     steps:
