@@ -291,12 +291,31 @@ def test_write_scene_list_edl(tmp_path: Path):
     assert "002  AX V     C        00:00:01:00 00:00:02:00 00:00:01:00 00:00:02:00" in content
 
 
+def test_write_scene_list_edl_file_handle():
+    """EDL output accepts an open text file."""
+    scenes = _fake_scenes(_FPS_CFR, [(0, 30)])
+    buf = StringIO()
+    write_scene_list_edl(buf, scenes)
+    text = buf.getvalue()
+    assert "TITLE:" in text
+
+
 def test_write_scene_list_edl_accepts_str_path(tmp_path: Path):
-    """`output_path` must accept both Path and str."""
+    """EDL output accepts a string path."""
     scenes = _fake_scenes(_FPS_CFR, [(0, 30)])
     output_path = tmp_path / "scenes.edl"
     write_scene_list_edl(str(output_path), scenes)
     assert output_path.exists()
+    assert "TITLE:" in output_path.read_text()
+
+
+def test_write_scene_list_edl_accepts_path(tmp_path: Path):
+    """EDL output accepts a `Path`."""
+    scenes = _fake_scenes(_FPS_CFR, [(0, 30)])
+    output_path = tmp_path / "scenes.edl"
+    write_scene_list_edl(output_path, scenes)
+    assert output_path.exists()
+    assert "TITLE:" in output_path.read_text()
 
 
 def test_write_scene_list_edl_with_start_timecode_smpte(tmp_path: Path):
@@ -428,6 +447,56 @@ def test_write_scene_list_fcpx_video_name_defaults_to_path_stem(tmp_path: Path):
     assert asset is not None and asset.attrib["name"] == "my_clip"
 
 
+def test_write_scene_list_fcpx_file_handle():
+    """FCPXML output accepts an open text file."""
+    scenes = _fake_scenes(_FPS_NTSC, [(48, 96), (96, 144)])
+    buf = StringIO()
+    # `video_path` need not exist; only `.absolute().as_uri()` is called on it.
+    write_scene_list_fcpx(
+        output_path=buf,
+        scene_list=scenes,
+        video_path=Path("fake_video.mp4"),
+        frame_rate=_FPS_NTSC,
+        frame_size=(1280, 544),
+    )
+
+    assert buf.getvalue().startswith('<?xml version="1.0"')
+
+
+def test_write_scene_list_fcpx_accepts_str_path(tmp_path: Path):
+    """FCPXML output accepts a string path."""
+    scenes = _fake_scenes(_FPS_NTSC, [(48, 96), (96, 144)])
+    output_path = tmp_path / "scenes.xml"
+    # `video_path` need not exist; only `.absolute().as_uri()` is called on it.
+    write_scene_list_fcpx(
+        output_path=str(output_path),
+        scene_list=scenes,
+        video_path=tmp_path / "fake_video.mp4",
+        frame_rate=_FPS_NTSC,
+        frame_size=(1280, 544),
+    )
+
+    assert output_path.exists()
+    assert output_path.read_text().startswith('<?xml version="1.0"')
+
+
+def test_write_scene_list_fcpx_accepts_path(tmp_path: Path):
+    """FCPXML output accepts a `Path`."""
+    scenes = _fake_scenes(_FPS_NTSC, [(48, 96), (96, 144)])
+    output_path = tmp_path / "scenes.xml"
+    # `video_path` need not exist; only `.absolute().as_uri()` is called on it.
+    write_scene_list_fcpx(
+        output_path=output_path,
+        scene_list=scenes,
+        video_path=tmp_path / "fake_video.mp4",
+        frame_rate=_FPS_NTSC,
+        frame_size=(1280, 544),
+    )
+
+    assert output_path.exists()
+    assert output_path.read_text().startswith('<?xml version="1.0"')
+
+
 def test_write_scene_list_fcp7(tmp_path: Path):
     """FCP7 xmeml declares version 5, a clipitem per scene, and a shared <file id> reference."""
     scenes = _fake_scenes(_FPS_NTSC, [(0, 48), (48, 96)])
@@ -476,6 +545,51 @@ def test_write_scene_list_fcp7_cfr_sets_ntsc_false(tmp_path: Path):
     root = ElementTree.parse(output_path).getroot()
     ntsc = root.find("project/sequence/rate/ntsc")
     assert ntsc is not None and ntsc.text == "False"
+
+
+def test_write_scene_list_fcp7_file_handle():
+    """FCP7 XML output accepts an open text file."""
+    scenes = _fake_scenes(_FPS_CFR, [(0, 30)])
+    buf = StringIO()
+    write_scene_list_fcp7(
+        buf,
+        scene_list=scenes,
+        video_path=Path("source.mp4"),
+        frame_rate=_FPS_CFR,
+        frame_size=(640, 360),
+    )
+    text = buf.getvalue()
+    assert text.startswith('<?xml version="1.0"')
+
+
+def test_write_scene_list_fcp7_accepts_str_path(tmp_path: Path):
+    """FCP7 XML output accepts a string path."""
+    scenes = _fake_scenes(_FPS_CFR, [(0, 30)])
+    output_path = tmp_path / "scenes.xml"
+    write_scene_list_fcp7(
+        output_path=str(output_path),
+        scene_list=scenes,
+        video_path=tmp_path / "source.mp4",
+        frame_rate=_FPS_CFR,
+        frame_size=(640, 360),
+    )
+    assert output_path.exists()
+    assert output_path.read_text().startswith('<?xml version="1.0"')
+
+
+def test_write_scene_list_fcp7_accepts_path(tmp_path: Path):
+    """FCP7 XML output accepts a `Path`."""
+    scenes = _fake_scenes(_FPS_CFR, [(0, 30)])
+    output_path = tmp_path / "scenes.xml"
+    write_scene_list_fcp7(
+        output_path=output_path,
+        scene_list=scenes,
+        video_path=tmp_path / "source.mp4",
+        frame_rate=_FPS_CFR,
+        frame_size=(640, 360),
+    )
+    assert output_path.exists()
+    assert output_path.read_text().startswith('<?xml version="1.0"')
 
 
 def test_write_scene_list_otio(tmp_path: Path):
@@ -545,3 +659,51 @@ def test_write_scene_list_otio_rational_time_precision(tmp_path: Path):
             for key in ("start_time", "duration"):
                 value = clip["source_range"][key]["value"]
                 assert value == round(value, 6), f"value {value!r} carries sub-10us float drift"
+
+
+def test_write_scene_list_otio_file_handle(tmp_path: Path):
+    """OTIO output accepts an open text file."""
+    scenes = _fake_scenes(_FPS_NTSC, [(24, 72), (72, 120)])
+    buf = StringIO()
+    write_scene_list_otio(
+        output_path=buf,
+        scene_list=scenes,
+        video_path=tmp_path / "clip.mp4",
+        frame_rate=_FPS_NTSC,
+        name="my-timeline",
+    )
+
+    doc = json.loads(buf.getvalue())
+    assert doc["OTIO_SCHEMA"] == "Timeline.1"
+
+
+def test_write_scene_list_otio_accepts_str_path(tmp_path: Path):
+    """OTIO output accepts a string path."""
+    scenes = _fake_scenes(_FPS_NTSC, [(24, 72), (72, 120)])
+    output_path = tmp_path / "scenes.otio"
+    write_scene_list_otio(
+        output_path=str(output_path),
+        scene_list=scenes,
+        video_path=tmp_path / "clip.mp4",
+        frame_rate=_FPS_NTSC,
+        name="my-timeline",
+    )
+
+    doc = json.loads(output_path.read_text())
+    assert doc["OTIO_SCHEMA"] == "Timeline.1"
+
+
+def test_write_scene_list_otio_accepts_path(tmp_path: Path):
+    """OTIO output accepts a `Path`."""
+    scenes = _fake_scenes(_FPS_NTSC, [(24, 72), (72, 120)])
+    output_path = tmp_path / "scenes.otio"
+    write_scene_list_otio(
+        output_path=output_path,
+        scene_list=scenes,
+        video_path=tmp_path / "clip.mp4",
+        frame_rate=_FPS_NTSC,
+        name="my-timeline",
+    )
+
+    doc = json.loads(output_path.read_text())
+    assert doc["OTIO_SCHEMA"] == "Timeline.1"
