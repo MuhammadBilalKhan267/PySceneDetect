@@ -152,7 +152,8 @@ def write_scene_list(
     Raises:
         TypeError: "delimiter" must be a 1-character string
     """
-    output_file = ty.cast(ty.TextIO, output_csv_file)
+    assert not isinstance(output_csv_file, (str, bytes, os.PathLike))
+    output_file = output_csv_file
     csv_writer = csv.writer(output_file, delimiter=col_separator, lineterminator=row_separator)
     # If required, output the cutting list as the first row (i.e. before the header row).
     if include_cut_list:
@@ -373,7 +374,8 @@ def write_scene_list_edl(
             every event so the EDL aligns with the source media's on-screen timecode. Applied to
             both source and record columns.
     """
-    output_file = ty.cast(ty.TextIO, output_path)
+    assert not isinstance(output_path, (str, bytes, os.PathLike))
+    output_file = output_path
     offset_frames = 0
     if start_timecode is not None and start_timecode.strip() and scene_list:
         frame_rate = scene_list[0][0].frame_rate
@@ -434,7 +436,8 @@ def write_scene_list_fcpx(
             of `video_path`.
     """
     assert scene_list
-    output_file = ty.cast(ty.TextIO, output_path)
+    assert not isinstance(output_path, (str, bytes, os.PathLike))
+    output_file = output_path
     video_path = Path(video_path)
     if video_name is None:
         video_name = video_path.stem
@@ -537,7 +540,8 @@ def write_scene_list_fcp7(
             frozen. If None, falls back to the last scene's end time.
     """
     assert scene_list
-    output_file = ty.cast(ty.TextIO, output_path)
+    assert not isinstance(output_path, (str, bytes, os.PathLike))
+    output_file = output_path
     video_path = Path(video_path)
     if video_name is None:
         video_name = video_path.stem
@@ -650,7 +654,8 @@ def write_scene_list_otio(
         name: Timeline name. Defaults to the stem of `video_path`.
         audio: If True (default), include an audio track alongside the video track.
     """
-    output_file = ty.cast(ty.TextIO, output_path)
+    assert not isinstance(output_path, (str, bytes, os.PathLike))
+    output_file = output_path
     video_path = Path(video_path)
     if name is None:
         name = video_path.stem
