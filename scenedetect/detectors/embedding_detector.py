@@ -1,15 +1,18 @@
-from scenedetect.detector import SceneDetector
-from scenedetect.common import FramePosition, TimecodeLike, parse_frame_or_time
-from scenedetect.detectors._embedding_models import DinoEmbedder
+from collections.abc import Callable
+
 import numpy as np
 
-from typing import Callable
+from scenedetect.common import FramePosition, TimecodeLike, parse_frame_or_time
+from scenedetect.detector import SceneDetector
+from scenedetect.detectors._embedding_models import DinoEmbedder
 
 Embedder = Callable[[np.ndarray], np.ndarray]
 Distance = Callable[[np.ndarray, np.ndarray], float]
 
+
 def cosine_distance(e1: np.ndarray, e2: np.ndarray) -> float:
     return 1.0 - cosine_similarity(e1, e2)
+
 
 def cosine_similarity(e1: np.ndarray, e2: np.ndarray) -> float:
     if e1.ndim != 1 or e2.ndim != 1 or e1.shape != e2.shape:
@@ -18,16 +21,24 @@ def cosine_similarity(e1: np.ndarray, e2: np.ndarray) -> float:
         )
     denom = np.linalg.norm(e1) * np.linalg.norm(e2)
     if denom == 0:
-        raise ValueError('Cosine similarity requires non-zero vectors')
+        raise ValueError("Cosine similarity requires non-zero vectors")
     return float(np.clip((e1 @ e2) / (denom), -1.0, 1.0))
 
+
 class EmbeddingDetector(SceneDetector):
-    def __init__(self, *, threshold: float, min_scene_len: TimecodeLike, embedder: Embedder, distance: Distance = cosine_distance):
+    def __init__(
+        self,
+        *,
+        threshold: float,
+        min_scene_len: TimecodeLike,
+        embedder: Embedder,
+        distance: Distance = cosine_distance,
+    ):
         super().__init__()
         self._threshold = threshold
         self._min_scene_len = parse_frame_or_time(min_scene_len)
         self._embedder: Embedder = embedder
-        self._distance: Distance  = distance
+        self._distance: Distance = distance
         self._last_scene_cut: FramePosition | None = None
         self._previous_embedding: np.ndarray | None = None
 
@@ -40,11 +51,12 @@ class EmbeddingDetector(SceneDetector):
         if last_cut is None or previous is None:
             self._last_scene_cut = position
             return cut_list
-        
+
         score = self._distance(previous, current)
-        if score >= self._threshold and self.meets_minimum(position  - last_cut, self._min_scene_len):
+        if score >= self._threshold and self.meets_minimum(
+            position - last_cut, self._min_scene_len
+        ):
             cut_list.append(position)
             self._last_scene_cut = position
 
         return cut_list
-
